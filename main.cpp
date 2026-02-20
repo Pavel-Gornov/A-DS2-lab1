@@ -64,6 +64,25 @@ double benchmark_contains(size_t amount) {
     return elapsed_ms;
 }
 
+template<typename T>
+bool is_subsets(const TreeSet<T>& set1, const TreeSet<T>& set2) {
+    if (set1.size() > set2.size()) {
+        auto it = set2.begin();
+        while (it.has_next()) {
+            T el = it.next();
+            if (!set1.contains(el)) return false; 
+        }
+    }
+    else {
+        auto it = set1.begin();
+        while (it.has_next()) {
+            T el = it.next();
+            if (!set2.contains(el)) return false; 
+        }
+    }
+    return true;
+}
+
 
 int main() {
     // TreeSet<int> tset = TreeSet<int>();
@@ -77,5 +96,16 @@ int main() {
     // tset.erase(7);
     // tset.print();
     // std::cout << "size: " << tset.size() << "\nhight: " <<tset.height() << "\n";
-    benchmark_full_set(100000);
+    
+    TreeSet<int> set1 = TreeSet<int>();
+    TreeSet<int> set2 = TreeSet<int>();
+
+    for (int i = 0; i < 12; i++) {
+        set1.insert(i);
+    }
+    set2.insert(1);
+    set2.insert(2);
+
+    std::cout << is_subsets(set1, set2) << "\n";
+    //benchmark_full_set(100000);
 }

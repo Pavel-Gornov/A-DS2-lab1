@@ -2,6 +2,7 @@
 #define TREESET_H
 
 #include <iostream>
+#include <stack>
 
 template<typename T>
 class TreeSet {
@@ -15,16 +16,61 @@ private:
         unsigned int height_;
     };
 public:
+   class TreeSetIterator {
+    public:
+        bool has_next() { return !stack_.empty(); }
+
+        T next() {
+            TreeNode* current = stack_.top();
+            stack_.pop();
+        
+            if (current->right) {
+                push_leftmost_(current->right);
+            }
+            return current->value;
+        }
+    private:
+        TreeSetIterator(TreeNode* root) { push_leftmost_(root); }
+        friend TreeSet;
+
+        std::stack<TreeNode*> stack_;
+
+        void push_leftmost_(TreeNode* node) {
+            while (node) {
+                stack_.push(node);
+                node = node->left;
+            }
+        }
+    };
+public:
     TreeSet(): root_(nullptr), size_(0) {};
 
-    TreeSet(const TreeSet<T>& tset) = delete;
-    TreeSet<T>& operator=(const TreeSet<T>& tset) = delete;
+    TreeSet(const TreeSet<T>& tset) {
+        this->root_ = copy_(tset);
+        this->size_ = tset.size_;
+    }
+
+    TreeSet<T>& operator=(const TreeSet<T>& tset) {
+        if (this != &tset) {
+            destroy_(this);
+            this->root_ = copy_(tset);
+            this->size_ = tset.size_;
+        }
+        return *this;
+    }
+
     ~TreeSet() {
         destroy_(root_);
     }
 
     size_t size() const { return size_; }
-    size_t height() const { return height(root_);}
+    size_t height() const { return height(root_); }
+    bool empty() const { return size_ == 0; }
+
+    // Приходится писать итератор для выполнения задачи -_-
+    TreeSetIterator begin() const {
+        return TreeSetIterator(root_);
+    }
 
     void print() const {
         print_(root_);
@@ -192,6 +238,16 @@ private:
         destroy_(root->right);
         delete root;
     };
+
+    static TreeNode* copy_(const TreeNode* root) {
+        if (!root) return nullptr;
+        TreeNode* c = new TreeNode();
+        c->value = root->value;
+        c->height_ = root->height_;
+        c->left = copy_(root->left);
+        c->right = copy_(root->right);
+        return c;
+    }
 
     static void print_(const TreeNode* node) { // TODO: Сделать нагляднее
         if (!node) return;
