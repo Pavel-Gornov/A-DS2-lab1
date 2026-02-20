@@ -8,7 +8,7 @@ class TreeSet {
 private:
     struct TreeNode {
         TreeNode(T value): left(nullptr), value(value), right(nullptr), height_(1) {};
-        ~TreeNode() {std::cout << value << " deleted ";}
+        //~TreeNode() {std::cout << value << " deleted ";}
         TreeNode* left;
         T value;
         TreeNode* right;
@@ -72,8 +72,17 @@ public:
         return false;
     }
 
-    // bool erase(T key);
-    // bool strictly_balanced() const;
+    bool erase(T key) {
+        if (!this->contains(key)) return false;
+
+        root_ = erase_(root_, key);
+
+        size_--;
+        return true;
+    }
+
+    // По сути это дерево всегда строго сбалансировано ¯\_(ツ)_/¯
+    bool strictly_balanced() const { return true; }
 
 private:
     TreeNode* root_ = nullptr;
@@ -116,12 +125,12 @@ private:
     static TreeNode* balance_node(TreeNode* node) {
         fix_height(node);
         if (bfactor(node) == 2) {
-            if (bfactor(node->right) < 0)
+            if (bfactor(node->right) < 0 && node->right->left)
                 node->right = rotate_right(node->right);
             return rotate_left(node);
         }
         if (bfactor(node) == -2) {
-            if (bfactor(node->left) > 0)
+            if (bfactor(node->left) > 0 && node->left->right)
                 node->left = rotate_left(node->left);
             return rotate_right(node);
         }
@@ -145,6 +154,36 @@ private:
         else
             node->right = insert_(node->right, key);
         return balance_node(node);
+    }
+
+    // Вспомогательная функция для балансировки при "извлечении" минимального элемента
+    static TreeNode* erase_extract_min_(TreeNode* node) {
+        if (!node->left) return node->right;
+        node->left = erase_extract_min_(node->left);
+        return balance_node(node);
+    }
+
+    static TreeNode* erase_(TreeNode* node, T key) {
+        if (!node) return nullptr;
+        if (node->value > key) 
+            node->left = erase_(node->left, key);
+        else if (node->value < key)
+            node->right = erase_(node->right, key);
+        else { // Найден удаляемый элемент
+            TreeNode* l = node->left;
+            TreeNode* r = node->right;
+            delete node;
+            // Балансировка:
+            if (!r) return l;
+
+            TreeNode* min = r;
+            while(min->left) min = min->left;
+
+            min->right = erase_extract_min_(r);
+            min->left = l;
+            return balance_node(min);
+        }
+        return nullptr;
     }
 
     static void destroy_(const TreeNode* root) {
