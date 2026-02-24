@@ -106,6 +106,11 @@ int main() {
     set2.insert(1);
     set2.insert(2);
 
-    std::cout << is_subsets(set1, set2) << "\n";
+    std::cout << "is_subsets(set1, set2): " << (is_subsets(set1, set2) ? "true": "false") << "\n"; // [0, 1, 2, ..., 11] и [1, 2]
+    set2.insert(-1);
+    std::cout << "is_subsets(set1, set2): " << (is_subsets(set1, set2) ? "true": "false") << "\n"; // [0, 1, 2, ..., 11] и [1, 2, -1]
+
+    set1.print();
+    std::cout << set1 << "\n";
     //benchmark_full_set(100000);
 }

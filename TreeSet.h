@@ -2,10 +2,20 @@
 #define TREESET_H
 
 #include <iostream>
+#include <ostream>
 #include <stack>
 
+// Объявление заранее
 template<typename T>
-class TreeSet {
+class TreeSet;
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const TreeSet<T>& tset);
+
+
+template<typename T>
+class TreeSet { 
+friend std::ostream& operator<<<T>(std::ostream& os, const TreeSet& tset); // Странная запись, но так и должно быть.
 private:
     struct TreeNode {
         TreeNode(T value): left(nullptr), value(value), right(nullptr), height_(1) {};
@@ -32,7 +42,6 @@ public:
     private:
         TreeSetIterator(TreeNode* root) { push_leftmost_(root); }
         friend TreeSet;
-
         std::stack<TreeNode*> stack_;
 
         void push_leftmost_(TreeNode* node) {
@@ -67,13 +76,13 @@ public:
     size_t height() const { return height(root_); }
     bool empty() const { return size_ == 0; }
 
-    // Приходится писать итератор для выполнения задачи -_-
+    // Приходиться писать итератор для выполнения задачи -_-
     TreeSetIterator begin() const {
         return TreeSetIterator(root_);
     }
 
     void print() const {
-        print_(root_);
+        print_(std::cout, root_);
         std::cout << "\n";
     }
 
@@ -127,8 +136,9 @@ public:
         return true;
     }
 
-    // По сути это дерево всегда строго сбалансировано ¯\_(ツ)_/¯
-    bool strictly_balanced() const { return true; }
+    bool strictly_balanced() const {
+        return bfactor(root_) == 0;
+    }
 
 private:
     TreeNode* root_ = nullptr;
@@ -249,23 +259,26 @@ private:
         return c;
     }
 
-    static void print_(const TreeNode* node) { // TODO: Сделать нагляднее
+    static void print_(std::ostream& os, const TreeNode* node) { // TODO: Сделать нагляднее
         if (!node) return;
-        std::cout << "(" << node->value << ")";
+        os << "(" << node->value << ")";
         if (node->left) {
-            std::cout << " <";
-            print_(node->left);
-            std::cout << ">, ";
+            os << " <";
+            print_(os, node->left);
+            os << ">, ";
         }
         if (node->right) {
-            std::cout << " [";
-            print_(node->right);
-            std::cout << "]";
+            os << " [";
+            print_(os, node->right);
+            os << "]";
         }
     }
 };
 
-// template<typename T>
-// std::ostream& operator<<(std::ostream& os, const TreeSet<T>&);
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const TreeSet<T>& tset) {
+    tset.print_(os, tset.root_);
+    return os;
+}
 
 #endif /* TREESET_H */ 
